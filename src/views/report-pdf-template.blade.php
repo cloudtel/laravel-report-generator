@@ -322,16 +322,20 @@
 				    						$diffGroup[$groupBy] = false;
 				    					}
 				    				}
+				    				
+				    				
+				    				
 		    						$group_headers[$groupBy] = $thisGroupByData[$groupBy];
 				    				
 
 				    				$currentGroupByData[$groupBy] = $thisGroupByData[$groupBy];
 				    			}
+				    		
 				    			if($ctr == 1 && !empty($group_headers)){
 				    				$i = 0;
 					    			foreach($group_headers as $group_header){
 					    				if($i == 0){
-	    								echo '<tr class="group-title-header"><td colspan="' . intval($colspan_count)  . '"><b>'.$group_header.'</b></td></tr>';
+	    									echo '<tr class="group-title-header"><td colspan="' . intval($colspan_count)  . '"><b>'.$group_header.'</b></td></tr>';
 					    				}else{
 	    									echo '<tr class="group-subtitle-header"><td colspan="' . intval($colspan_count)  . '">'.$group_header.'</td></tr>';
 					    				}
@@ -344,7 +348,7 @@
     							
     							
 				    			if (empty($isOnSameGroup)) {
-				    			
+				    		
 					    				if(!empty($showTotalColumns)){
 					    					$tr_class = ($totals_inline)?'tr-inline':'';
 			    							echo '<tr class="group-header '.$tr_class.'">
@@ -375,16 +379,14 @@
 							    			foreach($group_headers as $k => $v){
 							    				if($i == 0){
 							    					
-							    					if($diffGroup[$k] || $isOnSameGroup === false){
+							    					if($diffGroup[$k]){
 							    			
 							    			if(!empty($group_total)){			
 			    							echo '<tr class="group_total">
 			    							<td colspan="' . $grandTotalSkip . '"></td>';
 											$dataFound = false;
 			    							foreach ($columns as $colName => $colData) {
-			    									if(!empty($editColumns[$colName]['class']) && strpos($editColumns[$colName]['class'], 'hidden') !== false){
-			    						
-				    							}else{
+			    							
 			    								if (array_key_exists($colName, $showTotalColumns)) {
 			    									if ($showTotalColumns[$colName] == 'point') {
 			    										echo '<td class="right"><b>' . number_format($group_total[$colName], 2, '.', ',') . '</b></td>';
@@ -392,7 +394,7 @@
 			    										echo '<td class="left"><b>' . $group_total[$colName] . '</b></td>';
 			    									}
 			    								}
-				    							}
+				    							
 			    							}
 			    							echo '</tr>';
 							    			}
@@ -460,10 +462,17 @@
 		    							$total[$colName] += $generatedColData;
 		    							elseif($showTotalColumns[$colName] == 'count')
 		    							$total[$colName] += 1;
+				    					
+		    							if(empty($group_total[$colName]))
+				    					$group_total[$colName] = 0;
+				    					if($showTotalColumns[$colName] == 'point')
+		    							$group_total[$colName] += $generatedColData;
+		    							elseif($showTotalColumns[$colName] == 'count')
+		    							$group_total[$colName] += 1;
+				    					
+				    					
 				    					if(empty($grand_total[$colName]))
 				    					$grand_total[$colName] = 0;
-		    							//if(empty($group_total[$colName]))
-				    					//$group_total[$colName] = 0;
 				    					if($showTotalColumns[$colName] == 'point')
 		    							$grand_total[$colName] += $generatedColData;
 		    							elseif($showTotalColumns[$colName] == 'count')
@@ -540,7 +549,12 @@
 			    						
 				    			@else
 								@if (array_key_exists($colName, $showTotalColumns))
-								<td class="right"><b>{{ number_format($grand_total[$colName], 2, '.', ',') }}</b></td>
+								
+									@if ($showTotalColumns[$colName] == 'point')
+										<td class="right"><b>{{ number_format($grand_total[$colName], 2, '.', ',') }}</b></td>
+									@else
+										<td class="left"><b>{{ $grand_total[$colName] }}</b></td>
+									@endif
 								@elseif($j>$grandTotalSkip)
 								<td></td>
 								@endif

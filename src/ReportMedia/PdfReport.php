@@ -38,7 +38,7 @@ class PdfReport extends ReportGenerator
 			$pdf->setOption('footer-left', 'Page [page] of [topage]');
 			$pdf->setOption('footer-right', 'Date Printed: ' . date('d M Y H:i:s'));
 			$pdf->setOption('enable-javascript', true);
-			//$pdf->setOption('window-status', 'jsdone');
+			$pdf->setOption('window-status', 'jsdone');
 			$pdf->setOption('no-stop-slow-scripts', true);
 		} catch (\ReflectionException $e) {
 			try {
