@@ -62,7 +62,7 @@
 		    }
 		    .group-subtitle-header{
 		    	color:#212121;    
-		    	background-color: #fff;
+		    	background-color: #a3d0e4;
    				border-color: #29487d;
 		    	font-size: 15px;
 		    	height: 35px;
@@ -222,10 +222,13 @@
 		    		@if ($showHeader)
 		    		<tbody id="tbodyheader">
 			    		<tr>
+			    		@if(count($showTotalColumns) > 0 && count($columns)==1)
+			    		<td></td>
+			    		@endif	
 			    		<?php $hidden_columns = 0; ?>
 			    			@foreach ($columns as $colName => $colData)
+			    				<?php $colName = ($colData == 'Line')?'':$colName; ?>
 			    				@if (array_key_exists($colName, $editColumns))
-			    			
 				    				@if(!empty($editColumns[$colName]['class']) && strpos($editColumns[$colName]['class'], 'hidden') !== false)
 			    						<?php $hidden_columns++; ?>
 				    				@else
@@ -242,6 +245,7 @@
 		    		$chunkRecordCount = ($limit == null || $limit > 50000) ? 50000 : $limit + 1;
 		    		$__env = isset($__env) ? $__env : null;
 				//	xx($columns); xx($editColumns); xx($showTotalColumns);
+				//xx($totals_inline);
 					$query->chunk($chunkRecordCount, function($results) use(&$ctr, &$no, &$total, &$diffGroup, &$currentGroupByData, &$isOnSameGroup, $grandTotalSkip, $columns, $limit, $editColumns, $showTotalColumns, $groupByArr, $applyFlush, $__env, $totals_only, $totals_inline, $orderByArr, &$grand_total, &$group_total) {
 		
 						$post_result_sort = false;
@@ -297,7 +301,15 @@
 							if ($limit != null && $ctr == $limit + 1) return false;
 							if ($groupByArr) {
 								$isOnSameGroup = true;
+								if(!empty($hidden_columns))
 		    					$colspan_count = intval(count($columns) - $hidden_columns);
+		    					else
+		    					$colspan_count = intval(count($columns));
+		    					
+								if(count($showTotalColumns) > 0 && count($columns)==1){
+									$colspan_count = 2;
+								}	
+		    					
 		    					$group_headers = [];
 								foreach ($groupByArr as $groupBy) {
 									$group_title = (!empty($columns[$groupBy]))?$groupBy:'';
@@ -350,7 +362,7 @@
 				    			if (empty($isOnSameGroup)) {
 				    		
 					    				if(!empty($showTotalColumns)){
-					    					$tr_class = ($totals_inline)?'tr-inline':'';
+					    					$tr_class = ($totals_inline == 1)?'tr-inline':'';
 			    							echo '<tr class="group-header '.$tr_class.'">
 			    							<td colspan="' . $grandTotalSkip . '"></td>';
 											$dataFound = false;
@@ -359,7 +371,7 @@
 			    						
 				    							}else{
 			    								if (array_key_exists($colName, $showTotalColumns)) {
-			    									if ($showTotalColumns[$colName] == 'point') {
+			    									if ($showTotalColumns[$colName] == 'sum') {
 			    										echo '<td class="right"><b>' . number_format($total[$colName], 2, '.', ',') . '</b></td>';
 			    									} else {
 			    										echo '<td class="left"><b>' . $total[$colName] . '</b></td>';
@@ -381,14 +393,14 @@
 							    					
 							    					if($diffGroup[$k]){
 							    			
-							    			if(!empty($group_total)){			
+							    			if(!empty($group_total)){	
 			    							echo '<tr class="group_total">
 			    							<td colspan="' . $grandTotalSkip . '"></td>';
 											$dataFound = false;
 			    							foreach ($columns as $colName => $colData) {
 			    							
 			    								if (array_key_exists($colName, $showTotalColumns)) {
-			    									if ($showTotalColumns[$colName] == 'point') {
+			    									if ($showTotalColumns[$colName] == 'sum') {
 			    										echo '<td class="right"><b>' . number_format($group_total[$colName], 2, '.', ',') . '</b></td>';
 			    									} else {
 			    										echo '<td class="left"><b>' . $group_total[$colName] . '</b></td>';
@@ -458,14 +470,14 @@
 
 				    				if (array_key_exists($colName, $showTotalColumns)) {
 				    					
-				    					if($showTotalColumns[$colName] == 'point')
+				    					if($showTotalColumns[$colName] == 'sum')
 		    							$total[$colName] += $generatedColData;
 		    							elseif($showTotalColumns[$colName] == 'count')
 		    							$total[$colName] += 1;
 				    					
 		    							if(empty($group_total[$colName]))
 				    					$group_total[$colName] = 0;
-				    					if($showTotalColumns[$colName] == 'point')
+				    					if($showTotalColumns[$colName] == 'sum')
 		    							$group_total[$colName] += $generatedColData;
 		    							elseif($showTotalColumns[$colName] == 'count')
 		    							$group_total[$colName] += 1;
@@ -473,7 +485,7 @@
 				    					
 				    					if(empty($grand_total[$colName]))
 				    					$grand_total[$colName] = 0;
-				    					if($showTotalColumns[$colName] == 'point')
+				    					if($showTotalColumns[$colName] == 'sum')
 		    							$grand_total[$colName] += $generatedColData;
 		    							elseif($showTotalColumns[$colName] == 'count')
 		    							$grand_total[$colName] += 1;
@@ -495,7 +507,7 @@
 		            ?>
 					@if (!empty($currentGroupByData) && $showTotalColumns != [] && $ctr > 1)
 					    	<?php				
-					    	$tr_class = ($totals_inline)?'tr-inline':'';
+					    	$tr_class = ($totals_inline == 1)?'tr-inline':'';
 							echo '<tr class="group-header '.$tr_class.'">';
 							?>
 							<td colspan="{{ $grandTotalSkip }}"><b></b></td> {{-- For Number --}}
@@ -507,7 +519,7 @@
 								@if (array_key_exists($colName, $showTotalColumns))
 									<?php $dataFound = true; ?>
 								
-									@if ($showTotalColumns[$colName] == 'point')
+									@if ($showTotalColumns[$colName] == 'sum')
 										<td class="right"><b>{{ number_format($total[$colName], 2, '.', ',') }}</b></td>
 									@else
 										<td class="left"><b>{{ $total[$colName] }}</b></td>
@@ -527,7 +539,7 @@
 						$dataFound = false;
 						foreach ($columns as $colName => $colData) {
 						if (array_key_exists($colName, $showTotalColumns)) {
-							if ($showTotalColumns[$colName] == 'point') {
+							if ($showTotalColumns[$colName] == 'sum') {
 							echo '<td class="right"><b>' . number_format($group_total[$colName], 2, '.', ',') . '</b></td>';
 							}else {
 								echo '<td class="left"><b>' . $group_total[$colName] . '</b></td>';
@@ -550,7 +562,7 @@
 				    			@else
 								@if (array_key_exists($colName, $showTotalColumns))
 								
-									@if ($showTotalColumns[$colName] == 'point')
+									@if ($showTotalColumns[$colName] == 'sum')
 										<td class="right"><b>{{ number_format($grand_total[$colName], 2, '.', ',') }}</b></td>
 									@else
 										<td class="left"><b>{{ $grand_total[$colName] }}</b></td>

@@ -31,7 +31,7 @@ class PdfReport extends ReportGenerator
 			$html = \View::make('report-generator-view::report-pdf-template', compact('headers', 'columns', 'editColumns', 'showTotalColumns', 'styles', 'query', 'limit', 'groupByArr', 'orientation', 'showHeader', 'showMeta', 'applyFlush', 'totals_only', 'totals_inline', 'orderByArr', 'grand_total'))->render();
 		
 		}
-
+//xx($html);
 		try {
 			$pdf = \App::make('snappy.pdf.wrapper');
 			$pdf->setOption('footer-font-size', 10);
